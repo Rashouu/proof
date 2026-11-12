@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F5F7F2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Proof">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+<title>Proof</title>
+</head>
+<body>
+
+<main id="tasks-view">
+  <h1 class="mis display"><span class="mis-pink" id="date-pink" aria-hidden="true"></span><span class="mis-ink" id="date-ink"></span></h1>
+  <p class="faded summary" id="summary"></p>
+  <ul class="task-list" id="task-list"></ul>
+  <p class="empty" id="tasks-empty" hidden>Nothing to do. Add a task below.</p>
+</main>
+
+<main id="year-view" hidden>
+  <div class="year-head">
+    <div>
+      <p class="display streak" id="streak"></p>
+      <p class="faded" id="best"></p>
+    </div>
+    <button class="icon-btn" id="backup-open" type="button" aria-label="Backup">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><g fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></svg>
+    </button>
+  </div>
+  <div class="week-head faded" id="week-head" aria-hidden="true"><span></span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+  <div class="year-grid" id="year-grid"></div>
+  <ul class="results" id="search-results" hidden></ul>
+  <p class="empty" id="search-empty" hidden></p>
+</main>
+
+<div class="dock" id="dock">
+  <form class="field" id="add-form" autocomplete="off">
+    <input id="add-input" placeholder="Add a task" aria-label="New task" maxlength="200">
+    <button class="add-btn" type="submit" aria-label="Add task">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </form>
+  <form class="field" id="search-form" role="search" autocomplete="off" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></g></svg>
+    <input id="search-input" type="search" placeholder="Search finished tasks" aria-label="Search finished tasks" enterkeyhint="search">
+  </form>
+  <nav class="tabs">
+    <button type="button" id="tab-tasks" aria-current="page">Tasks</button>
+    <button type="button" id="tab-year">Year</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" popover="manual">
+  <span id="toast-text"></span>
+  <button type="button" id="toast-undo">Undo</button>
+  <span class="toast-life" id="toast-life"></span>
+</div>
+
+<dialog class="sheet" id="task-sheet" aria-label="Task details">
+  <form class="sheet-body" id="task-form" autocomplete="off">
+    <div class="sheet-bar">
+      <button type="button" class="faded" id="task-cancel">Cancel</button>
+      <button type="submit" class="pill">Save</button>
+    </div>
+    <input class="title-input display" id="task-title" aria-label="Title" maxlength="200" required>
+    <div class="sheet-row">
+      <label for="task-due">Due</label>
+      <input type="date" id="task-due">
+      <button type="button" class="icon-btn faded" id="task-due-clear" aria-label="Clear due date">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <label class="faded notes-label" for="task-notes">Notes</label>
+    <textarea id="task-notes" rows="5"></textarea>
+    <button type="button" class="highlight" id="task-delete">Delete task</button>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="day-sheet" aria-labelledby="day-title">
+  <div class="sheet-body">
+    <div class="sheet-bar"><span></span><button type="button" class="faded" data-close>Close</button></div>
+    <h2 class="display" id="day-title"></h2>
+    <p class="faded" id="day-count"></p>
+    <ul class="done-list" id="day-list"></ul>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="backup-sheet" aria-labelledby="backup-title">
+  <div class="sheet-body">
+    <div class="sheet-bar"><span></span><button type="button" class="faded" data-close>Close</button></div>
+    <h2 class="display" id="backup-title">Backup</h2>
+    <p class="faded">Your tasks are stored only on this iPhone. Export a backup file to keep a copy in Files or iCloud Drive.</p>
+    <button type="button" class="btn" id="export-btn">Export backup</button>
+    <label class="btn">Import backup<input type="file" id="import-input" accept=".json,application/json" hidden></label>
+    <p class="faded" id="backup-msg" role="status"></p>
+  </div>
+</dialog>
+
+<label class="haptic" aria-hidden="true"><input type="checkbox" switch id="haptic" tabindex="-1"></label>
+
+</body>
+</html>
